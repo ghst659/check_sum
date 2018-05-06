@@ -13,9 +13,10 @@ import (
 )
 
 var (
-	sumType string
-	hasher  hash.Hash
-	logger  *log.Logger
+	exitCode int = 0
+	sumType  string
+	hasher   hash.Hash
+	logger   *log.Logger
 )
 
 func init() {
@@ -39,7 +40,12 @@ func findHasher(hashType string) (h hash.Hash, e error) {
 	return
 }
 
+func exitWithCode() {
+	os.Exit(exitCode)
+}
+
 func main() {
+	defer exitWithCode()
 	flag.Parse()
 	logger.Printf("Sum type: %s\n", sumType)
 	argv := flag.Args()
@@ -60,9 +66,14 @@ func main() {
 	if _, err := io.Copy(hasher, f); err != nil {
 		logger.Fatal(err)
 	}
-	logger.Printf("Expect %s -> %s\n", filename, expected)
 	found := fmt.Sprintf("%x", hasher.Sum(nil))
-	if found != expected {
-		fmt.Printf("%s\n%s %s\nDIFFERENT\n", expected, found, filename)
+	fmt.Printf("want: %s\n", expected)
+	fmt.Printf("got:  %s\n", found)
+	if found == expected {
+		fmt.Println("SAME")
+		exitCode = 0
+	} else {
+		fmt.Println("DIFFERENT")
+		exitCode = 1
 	}
 }
