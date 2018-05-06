@@ -47,11 +47,13 @@ func exitWithCode() {
 func main() {
 	defer exitWithCode()
 	flag.Parse()
-	logger.Printf("Sum type: %s\n", sumType)
-	argv := flag.Args()
+	exitCode = mainImpl(flag.Args())
+}
+
+func mainImpl(argv []string) int {
 	if len(argv) != 2 {
 		logger.Printf("bad number of args: %d\n", len(argv))
-		return
+		return -1
 	}
 	filename, expected := argv[0], argv[1]
 	hasher, err := findHasher(sumType)
@@ -71,9 +73,9 @@ func main() {
 	fmt.Printf("got:  %s\n", found)
 	if found == expected {
 		fmt.Println("SAME")
-		exitCode = 0
+		return 0
 	} else {
 		fmt.Println("DIFFERENT")
-		exitCode = 1
+		return 1
 	}
 }
